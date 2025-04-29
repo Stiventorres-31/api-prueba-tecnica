@@ -14,8 +14,6 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
 
             //AÑADI LAS RELACIONES DE FORMA CORRECTA
-            // $table->unsignedBigInteger('customer_id');
-            // $table->unsignedBigInteger('payment_method_id')->nullable();
             $table->id();
             $table->foreignId('customer_id')->constrained('customers');
             $table->foreignId('payment_method_id')->nullable()->constrained('payment_methods');
