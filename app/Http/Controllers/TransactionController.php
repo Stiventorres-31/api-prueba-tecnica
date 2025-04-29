@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GetTransactionRequest;
+use App\Models\Customer;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
@@ -65,6 +67,46 @@ class TransactionController extends Controller
 
     public function createPayment(Request $request)
     {
+        DB::beginTransaction();
+
+        try {
+            // Crear cliente
+            $customer = Customer::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'type_document' => $request->type_document,
+                'number_document' => $request->number_document,
+                'preferences' => [
+                    'raw_data' => $request->validated(),
+                ],
+            ]);
+
+            // Crear transacción
+            $transaction = Transaction::create([
+                'customer_id' => $customer->id,
+                'amount' => $request->amount,
+                'currency' => $request->currency,
+                'status' => 'pending',
+                'metadata' => [
+                    'raw_data' => $request->validated(),
+                ],
+                'created_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return ResponseHelper::error("Se ha creado correctamente",201,[
+                'transaction_id' => $transaction->id,
+                'url_payment' => url("/transaction/{$transaction->id}")
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error al crear el pago', ['error' => $e->getMessage()]);
+
+            return ResponseHelper::error("Error interno al procesar el pago",500);
+        }
+
         $data = $request->all();
 
         $customer = DB::table('customers')->insertGetId([
@@ -95,7 +137,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::with('customer')->findOrFail($request->id);
 
-        return ResponseHelper::success("Se ha obtenido correctamente",200,["transactions"=>$transaction]);
+        return ResponseHelper::success("Se ha obtenido correctamente", 200, ["transactions" => $transaction]);
     }
 
     public function getTransactions()
@@ -104,6 +146,6 @@ class TransactionController extends Controller
             ->paginate(15);
 
 
-        return ResponseHelper::success("Se han obtenidos correctamente",200,["transactions"=>$transactions]);
+        return ResponseHelper::success("Se han obtenidos correctamente", 200, ["transactions" => $transactions]);
     }
 }
