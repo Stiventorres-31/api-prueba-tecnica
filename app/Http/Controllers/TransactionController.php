@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetTransactionRequest;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
@@ -88,12 +91,11 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function getTransaction(Request $request)
+    public function getTransaction(GetTransactionRequest $request)
     {
-        $transaction = DB::table('transactions')->where('id', $request->id)->first();
-        $customer = DB::table('customers')->where('id', $transaction->customer_id)->first();
-        $transaction->customer = $customer;
-        return response()->json($transaction);
+        $transaction = Transaction::with('customer')->findOrFail($request->id);
+
+        return ResponseHelper::success("Se ha obtenido correctamente",200,["transactions"=>$transaction]);
     }
 
     public function getTransactions()
@@ -101,6 +103,7 @@ class TransactionController extends Controller
         $transactions = Transaction::with(['customer', 'paymentMethod'])
             ->paginate(15);
 
-        return response()->json($transactions);
+
+        return ResponseHelper::success("Se han obtenidos correctamente",200,["transactions"=>$transactions]);
     }
 }
