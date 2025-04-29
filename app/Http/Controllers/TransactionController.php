@@ -17,12 +17,11 @@ use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
-    public function getPaymentsMethods(Request $request)
+    public function getPaymentsMethods()
     {
 
-        $paymentMethods = DB::select('SELECT * FROM payment_methods');
-
-        return response()->json($paymentMethods);
+        $paymentMethods = PaymentMethod::paginate(15);
+        return ResponseHelper::success("Se ha obtenido correctamente",200,["paymentMethods"=>$paymentMethods]);
     }
 
     public function generatePayment(GeneratePaymentRequest $request)
