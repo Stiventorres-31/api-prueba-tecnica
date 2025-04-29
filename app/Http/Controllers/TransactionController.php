@@ -98,7 +98,7 @@ class TransactionController extends Controller
 
             return ResponseHelper::error("Se ha creado correctamente",201,[
                 'transaction_id' => $transaction->id,
-                'url_payment' => url("/transaction/{$transaction->id}")
+                'url_payment' => 'http://localhost:5173/transaction/' . $transaction->id
             ]);
 
         } catch (\Throwable $e) {
