@@ -10,4 +10,14 @@ class ResponseHelper{
             "result"=>$data
         ],$code);
     }
+
+    public static function error(string $message ="Error en el servidor interno",int $code=500,array $data=[]){
+        return response()->json([
+            "success"=>true,
+            "code"=>$code,
+            "message"=>$message,
+            "result"=>$data
+        ],$code);
+    }
+
 }
