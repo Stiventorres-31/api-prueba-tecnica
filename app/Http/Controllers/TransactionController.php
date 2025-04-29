@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreatePaymentRequest;
+use App\Http\Requests\GeneratePaymentRequest;
 use App\Http\Requests\GetTransactionRequest;
 use App\Models\Customer;
+use App\Models\PaymentMethod;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -23,47 +25,47 @@ class TransactionController extends Controller
         return response()->json($paymentMethods);
     }
 
-    public function generatePayment(Request $request)
+    public function generatePayment(GeneratePaymentRequest $request)
     {
-        $data = $request->all();
+        DB::beginTransaction();
 
-        $paymentMethod = DB::table('payment_methods')
-            ->where('name', $data['payment_method'])
-            ->first();
+        try {
+            // Buscar método de pago
+            $paymentMethod = PaymentMethod::where('name', $request->payment_method)->firstOrFail();
 
+            $fee = $paymentMethod->config['fee'] ?? 0;
+            $total = $request->amount + $fee;
 
-        $fee = 0;
-        $total = 0;
+            // Buscar transacción
+            $transaction = Transaction::findOrFail($request->transaction_id);
 
-        if ($paymentMethod->name === 'cash') {
-            $fee = json_decode($paymentMethod->config)->fee ?? 0;
-            $total = $data['amount'] + $fee;
-        } else if ($paymentMethod->name === 'online') {
-            $fee = json_decode($paymentMethod->config)->fee ?? 0;
-            $total = $data['amount'] + $fee;
-        } else if ($paymentMethod->name === 'crypto') {
-            $fee = json_decode($paymentMethod->config)->fee ?? 0;
-            $total = $data['amount'] + $fee;
+            // Actualizar datos de la transacción
+            $transaction->update([
+                'customer_id' => $request->customer_id,
+                'payment_method_id' => $paymentMethod->id,
+                'amount' => $request->amount,
+                'currency' => $request->currency,
+                'fee' => $fee,
+                'total' => $total,
+                'status' => 'completed',
+                'metadata' => [
+                    'raw_data' => $request->validated(),
+                ],
+            ]);
+
+            DB::commit();
+
+            return ResponseHelper::error("Se ha generado correctamente", 200, [
+                'transaction_id' => $transaction->id,
+                'url_payment' => 'http://localhost:5173/transaction/' . $transaction->id,
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error al generar el pago', ['error' => $e->getMessage()]);
+
+            return ResponseHelper::error("Error interno al generar el pago.",500);
         }
-
-        $transaction = DB::table('transactions')->where('id', $data['transaction_id'])->update([
-            'customer_id' => $data['customer_id'],
-            'payment_method_id' => $paymentMethod->id,
-            'amount' => $data['amount'],
-            'currency' => $data['currency'],
-            'fee' => $fee,
-            'total' => $total,
-            'status' => 'completed',
-            'metadata' => json_encode(['raw_data' => $data]),
-            'updated_at' => now()
-        ]);
-
-
-
-        return response()->json([
-            'status' => 'success',
-            'transaction_id' => $transaction
-        ]);
     }
 
     public function createPayment(CreatePaymentRequest $request)
@@ -85,27 +87,26 @@ class TransactionController extends Controller
             // Crear transacción
             $transaction = Transaction::create([
                 'customer_id' => $customer->id,
+                'payment_method_id' => null,
                 'amount' => $request->amount,
                 'currency' => $request->currency,
                 'status' => 'pending',
                 'metadata' => [
                     'raw_data' => $request->validated(),
-                ],
-                'created_at' => now(),
+                ]
             ]);
 
             DB::commit();
 
-            return ResponseHelper::error("Se ha creado correctamente",201,[
+            return ResponseHelper::error("Se ha creado correctamente", 201, [
                 'transaction_id' => $transaction->id,
                 'url_payment' => 'http://localhost:5173/transaction/' . $transaction->id
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error al crear el pago', ['error' => $e->getMessage()]);
 
-            return ResponseHelper::error("Error interno al procesar el pago",500);
+            return ResponseHelper::error("Error interno al procesar el pago", 500);
         }
     }
 
