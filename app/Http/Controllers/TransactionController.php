@@ -6,6 +6,7 @@ use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreatePaymentRequest;
 use App\Http\Requests\GetTransactionRequest;
 use App\Models\Customer;
 use App\Models\Transaction;
@@ -65,7 +66,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function createPayment(GetTransactionRequest $request)
+    public function createPayment(CreatePaymentRequest $request)
     {
         DB::beginTransaction();
 
