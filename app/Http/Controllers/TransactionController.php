@@ -65,7 +65,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function createPayment(Request $request)
+    public function createPayment(GetTransactionRequest $request)
     {
         DB::beginTransaction();
 
@@ -106,31 +106,6 @@ class TransactionController extends Controller
 
             return ResponseHelper::error("Error interno al procesar el pago",500);
         }
-
-        $data = $request->all();
-
-        $customer = DB::table('customers')->insertGetId([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'type_document' => $data['type_document'],
-            'number_document' => $data['number_document'],
-            'preferences' => json_encode(['raw_data' => $data]),
-        ]);
-
-        $transaction = DB::table('transactions')->insertGetId([
-            'customer_id' => $customer,
-            'amount' => $data['amount'],
-            'currency' => $data['currency'],
-            'status' => 'pending',
-            'metadata' => json_encode(['raw_data' => $data]),
-            'created_at' => now()
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'transaction_id' => $transaction,
-            'url_payment' => 'http://localhost:5173/transaction/' . $transaction
-        ]);
     }
 
     public function getTransaction(GetTransactionRequest $request)
