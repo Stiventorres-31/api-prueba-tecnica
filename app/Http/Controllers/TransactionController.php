@@ -10,19 +10,21 @@ class TransactionController extends Controller
 {
     public function getPaymentsMethods(Request $request)
     {
+
         $paymentMethods = DB::select('SELECT * FROM payment_methods');
+        
         return response()->json($paymentMethods);
     }
 
     public function generatePayment(Request $request)
     {
         $data = $request->all();
-        
+
         $paymentMethod = DB::table('payment_methods')
             ->where('name', $data['payment_method'])
             ->first();
-        
- 
+
+
         $fee = 0;
         $total = 0;
 
@@ -45,12 +47,12 @@ class TransactionController extends Controller
             'fee' => $fee,
             'total' => $total,
             'status' => 'completed',
-            'metadata' => json_encode(['raw_data' => $data]), 
+            'metadata' => json_encode(['raw_data' => $data]),
             'updated_at' => now()
         ]);
 
 
-        
+
         return response()->json([
             'status' => 'success',
             'transaction_id' => $transaction
@@ -60,7 +62,7 @@ class TransactionController extends Controller
     public function createPayment(Request $request)
     {
         $data = $request->all();
-        
+
         $customer = DB::table('customers')->insertGetId([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -68,16 +70,16 @@ class TransactionController extends Controller
             'number_document' => $data['number_document'],
             'preferences' => json_encode(['raw_data' => $data]),
         ]);
-        
+
         $transaction = DB::table('transactions')->insertGetId([
             'customer_id' => $customer,
             'amount' => $data['amount'],
             'currency' => $data['currency'],
             'status' => 'pending',
             'metadata' => json_encode(['raw_data' => $data]),
-            'created_at' => now() 
+            'created_at' => now()
         ]);
-        
+
         return response()->json([
             'status' => 'success',
             'transaction_id' => $transaction,
@@ -95,6 +97,7 @@ class TransactionController extends Controller
 
     public function getTransactions(Request $request)
     {
+
         $transactions = DB::table('transactions')->get();
         $customers = DB::table('customers')->get();
         $paymentMethods = DB::table('payment_methods')->get();

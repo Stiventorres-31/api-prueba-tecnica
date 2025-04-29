@@ -12,36 +12,37 @@ return new class extends Migration
      */
     public function up(): void
     {
+        //CREE UN SEED PARA LOS DATOS PREDEFINIDO AQUI Y EL NAME LO COLOQUE COMO UNICO PARA EVITAR DUPLICIDAD
         Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // 'cash', 'online', 'crypto'
-            $table->json('config'); 
+            $table->string('name')->unique(); // 'cash', 'online', 'crypto'
+            $table->json('config');
             $table->timestamps();
         });
 
         // Insertar los métodos de pago predefinidos
-        $paymentMethods = [
-            [
-                'name' => 'cash',
-                'config' => json_encode(['fee' => rand(100, 1000)]),
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'name' => 'online',
-                'config' => json_encode(['fee' => rand(100, 1000)]),
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'name' => 'crypto',
-                'config' => json_encode(['fee' => rand(100, 1000)]),
-                'created_at' => now(),
-                'updated_at' => now()
-            ]
-        ];
+        // $paymentMethods = [
+        //     [
+        //         'name' => 'cash',
+        //         'config' => json_encode(['fee' => rand(100, 1000)]),
+        //         'created_at' => now(),
+        //         'updated_at' => now()
+        //     ],
+        //     [
+        //         'name' => 'online',
+        //         'config' => json_encode(['fee' => rand(100, 1000)]),
+        //         'created_at' => now(),
+        //         'updated_at' => now()
+        //     ],
+        //     [
+        //         'name' => 'crypto',
+        //         'config' => json_encode(['fee' => rand(100, 1000)]),
+        //         'created_at' => now(),
+        //         'updated_at' => now()
+        //     ]
+        // ];
 
-        DB::table('payment_methods')->insert($paymentMethods);
+        // DB::table('payment_methods')->insert($paymentMethods);
     }
 
     /**
@@ -50,5 +51,18 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('payment_methods');
+    }
+
+    public function seedDefaultPaymentMethod(){
+        $now = now();
+        $dataDefault= collect(['cash','online','crypto'])->map(function($namePaymentMethod)use ($now){
+            return [
+                'name' => $namePaymentMethod,
+                'config' => json_encode(['fee' => rand(100, 1000)]),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        });
+        DB::table('payment_methods')->insert($dataDefault->toArray());
     }
 };
