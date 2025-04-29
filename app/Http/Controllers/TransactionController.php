@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Transaction;
 
 class TransactionController extends Controller
 {
@@ -12,7 +13,7 @@ class TransactionController extends Controller
     {
 
         $paymentMethods = DB::select('SELECT * FROM payment_methods');
-        
+
         return response()->json($paymentMethods);
     }
 
@@ -28,13 +29,13 @@ class TransactionController extends Controller
         $fee = 0;
         $total = 0;
 
-        if($paymentMethod->name === 'cash') {
+        if ($paymentMethod->name === 'cash') {
             $fee = json_decode($paymentMethod->config)->fee ?? 0;
             $total = $data['amount'] + $fee;
-        }else if($paymentMethod->name === 'online') {
+        } else if ($paymentMethod->name === 'online') {
             $fee = json_decode($paymentMethod->config)->fee ?? 0;
             $total = $data['amount'] + $fee;
-        }else if($paymentMethod->name === 'crypto') {
+        } else if ($paymentMethod->name === 'crypto') {
             $fee = json_decode($paymentMethod->config)->fee ?? 0;
             $total = $data['amount'] + $fee;
         }
@@ -83,7 +84,7 @@ class TransactionController extends Controller
         return response()->json([
             'status' => 'success',
             'transaction_id' => $transaction,
-            'url_payment'=> 'http://localhost:5173/transaction/' . $transaction
+            'url_payment' => 'http://localhost:5173/transaction/' . $transaction
         ]);
     }
 
@@ -95,16 +96,11 @@ class TransactionController extends Controller
         return response()->json($transaction);
     }
 
-    public function getTransactions(Request $request)
+    public function getTransactions()
     {
+        $transactions = Transaction::with(['customer', 'paymentMethod'])
+            ->paginate(15);
 
-        $transactions = DB::table('transactions')->get();
-        $customers = DB::table('customers')->get();
-        $paymentMethods = DB::table('payment_methods')->get();
-        foreach ($transactions as $transaction) {
-            $transaction->customer = $customers->where('id', $transaction->customer_id)->first();
-            $transaction->payment_method = $paymentMethods->where('id', $transaction->payment_method_id)->first();
-        }
         return response()->json($transactions);
     }
 }
