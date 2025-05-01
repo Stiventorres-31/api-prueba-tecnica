@@ -2,6 +2,9 @@
 
 Este repositorio contiene la implementación de un sistema de creación y procesamiento de pagos, desarrollado como parte de una prueba técnica.
 
+
+##Antes de iniciar el proyecto, correr las migraciones y los seeder
+
 ## 🧩 Funcionalidades
 
 - Creación de clientes (`Customer`)
