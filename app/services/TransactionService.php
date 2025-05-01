@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Customer;
 use App\Models\PaymentMethod;
+use App\Models\Transaction;
 use App\Repositories\TransactionRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -18,12 +19,12 @@ class TransactionService
 
     public function listPaginated(int $page = 5)
     {
-        return $this->transactionRepository->paginate(5);
+        return $this->transactionRepository->paginate($page);
     }
 
     public function getById(int $id)
     {
-        return $this->transactionRepository->findById($id);
+        return Transaction::with(['customer', 'paymentMethod'])->findOrFail($id);
     }
 
     public function createTransaction(array $validated)

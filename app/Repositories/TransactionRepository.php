@@ -10,7 +10,7 @@ class TransactionRepository implements TransactionRepositoryInterface {
     }
 
     public function findById(int $id){
-        return Transaction::with('customer')->firstOrFail();
+        return Transaction::with('customer')->firstOrFail($id);
     }
 
     public function create(array $data){
