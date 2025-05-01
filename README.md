@@ -53,6 +53,6 @@ Este repositorio contiene la implementación de un sistema de creación y proces
 - Se encapsuló validación en `FormRequest` para control limpio de errores 422.
 - Se usaron transacciones para asegurar integridad entre cliente y transacción.
 - `metadata` y `preferences` permiten flexibilidad y trazabilidad.
-- Se crearon los modelos de cada migración para definir la logica del negocio y sus relaciones
-
+- Se crearon los modelos de cada migración para definir la logica del negocio y sus relaciones.
+- se realizaron test para revisar le funcionamiento de las rutas y services
 ---
