@@ -6,13 +6,8 @@ use App\Models\PaymentMethod;
 
 class PaymentMethodRepository implements PaymentMethodRepositoryInterface
 {
-    public function findByName(string $name)
+    public function all()
     {
-        return PaymentMethod::where('name', $name)->firstOrFail();
-    }
-
-    public function find(int $id)
-    {
-        return PaymentMethod::findOrFail($id);
+        return PaymentMethod::all();
     }
 }

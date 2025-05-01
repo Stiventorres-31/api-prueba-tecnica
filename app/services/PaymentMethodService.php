@@ -6,20 +6,15 @@ use App\Repositories\PaymentMethodRepositoryInterface;
 
 class PaymentMethodService
 {
-    protected $paymentRepo;
+    protected $paymentRepository;
 
-    public function __construct(PaymentMethodRepositoryInterface $paymentRepo)
+    public function __construct(PaymentMethodRepositoryInterface $paymentRepository)
     {
-        $this->paymentRepo = $paymentRepo;
+        $this->paymentRepository = $paymentRepository;
     }
 
-    public function getByName(string $name)
+    public function listAll()
     {
-        return $this->paymentRepo->findByName($name);
-    }
-
-    public function getById(int $id)
-    {
-        return $this->paymentRepo->find($id);
+        return $this->paymentRepository->all();
     }
 }
