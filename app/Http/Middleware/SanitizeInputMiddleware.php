@@ -15,7 +15,7 @@ class SanitizeInputMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $nput =$request->all();
+        $input =$request->all();
         array_walk_recursive($input,function($value){
             $value = strip_tags($value);
             $value = preg_replace('/on\w+="[^"]*"/i', '', $value);
