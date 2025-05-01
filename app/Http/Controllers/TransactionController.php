@@ -17,14 +17,22 @@ use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
-    public function getPaymentsMethods()
+
+    public function index()
     {
+        $transactions = Transaction::with(['customer', 'paymentMethod'])
+            ->paginate(5);
 
-        $paymentMethods = PaymentMethod::paginate(15);
-        return ResponseHelper::success("Se ha obtenido correctamente",200,["paymentMethods"=>$paymentMethods]);
+
+        return ResponseHelper::success("Se han obtenidos correctamente", 200, ["transactions" => $transactions]);
     }
+    public function show(GetTransactionRequest $request)
+    {
+        $transaction = Transaction::with('customer')->findOrFail($request->id);
 
-    public function generatePayment(GeneratePaymentRequest $request)
+        return ResponseHelper::success("Se ha obtenido correctamente", 200, ["transactions" => $transaction]);
+    }
+    public function update(GeneratePaymentRequest $request)
     {
         DB::beginTransaction();
 
@@ -58,16 +66,15 @@ class TransactionController extends Controller
                 'transaction_id' => $transaction->id,
                 'url_payment' => 'http://localhost:5173/transaction/' . $transaction->id,
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error al generar el pago', ['error' => $e->getMessage()]);
 
-            return ResponseHelper::error("Error interno al generar el pago.",500);
+            return ResponseHelper::error("Error interno al generar el pago.", 500);
         }
     }
 
-    public function createPayment(CreatePaymentRequest $request)
+    public function store(CreatePaymentRequest $request)
     {
         DB::beginTransaction();
 
@@ -107,21 +114,5 @@ class TransactionController extends Controller
 
             return ResponseHelper::error("Error interno al procesar el pago", 500);
         }
-    }
-
-    public function getTransaction(GetTransactionRequest $request)
-    {
-        $transaction = Transaction::with('customer')->findOrFail($request->id);
-
-        return ResponseHelper::success("Se ha obtenido correctamente", 200, ["transactions" => $transaction]);
-    }
-
-    public function getTransactions()
-    {
-        $transactions = Transaction::with(['customer', 'paymentMethod'])
-            ->paginate(15);
-
-
-        return ResponseHelper::success("Se han obtenidos correctamente", 200, ["transactions" => $transactions]);
     }
 }

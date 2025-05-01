@@ -19,30 +19,6 @@ return new class extends Migration
             $table->json('config');
             $table->timestamps();
         });
-
-        // Insertar los métodos de pago predefinidos
-        // $paymentMethods = [
-        //     [
-        //         'name' => 'cash',
-        //         'config' => json_encode(['fee' => rand(100, 1000)]),
-        //         'created_at' => now(),
-        //         'updated_at' => now()
-        //     ],
-        //     [
-        //         'name' => 'online',
-        //         'config' => json_encode(['fee' => rand(100, 1000)]),
-        //         'created_at' => now(),
-        //         'updated_at' => now()
-        //     ],
-        //     [
-        //         'name' => 'crypto',
-        //         'config' => json_encode(['fee' => rand(100, 1000)]),
-        //         'created_at' => now(),
-        //         'updated_at' => now()
-        //     ]
-        // ];
-
-        // DB::table('payment_methods')->insert($paymentMethods);
     }
 
     /**
