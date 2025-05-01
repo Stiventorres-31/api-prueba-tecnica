@@ -3,7 +3,9 @@
 Este repositorio contiene la implementación de un sistema de creación y procesamiento de pagos, desarrollado como parte de una prueba técnica.
 
 
-##Antes de iniciar el proyecto, correr las migraciones y los seeder
+## Antes de iniciar el proyecto, correr las migraciones y los seeder
+
+## La rama principal de este repositorio es `development`
 
 ## 🧩 Funcionalidades
 
@@ -15,27 +17,18 @@ Este repositorio contiene la implementación de un sistema de creación y proces
 - Control de errores con logs y transacciones
 
 
-## 🧪 Rutas principales
+## 📁 Arquitectura usada
+- Arquitectura en capas 
 
-- `POST /api/create-payment` → Crea una transacción pendiente
-- `POST /api/generate-payment` → Completa el pago
+## Patrones usado
+-Repository Pattern: separa la lógica de negocio de la lógica de acceso a datos.
+-Service Layer: extrae la lógica del controlador para mantenerlo delgado y limpio.
+-Middleware personalizado: protección contra XSS y saneamiento de entrada.
 
-## 📂 Nuevos directorios
 
-- `app/Models/Customer.php`
-- `app/Models/Transaction.php`
-- `app/Models/PaymentMethod.php`
-- `app/Http/Requests/CreatePaymentRequest.php`
-- `app/Http/Requests/GeneratePaymentRequest.php`
-- `app/Http/Requests/GetTransactionRequest.php`
-- `app/Helpers/ResponseHelper.php`
+## 📁 Middleware
 
-## 📂 Estructura importante
-
-- `app/Models/Customer.php`
-- `app/Models/Transaction.php`
-- `app/Http/Requests/CreatePaymentRequest.php`
-- `app/Http/Requests/GeneratePaymentRequest.php`
+- Se establecio un `middleware` global para las rutas del archivo `api.php`. El middleware analiza cada input que entra para no recibir codigo malicioso.
 
 ## 🧬 Migraciones refactorizada
 
